@@ -1,0 +1,62 @@
+=== ARMORHQ DASHBOARD SUBMISSION ===
+
+WHAT WAS BUILT:
+1. Live Dashboard at "/"
+   - Hero metric: Connected calls last 7 days (Dana's Monday check)
+   - Top 3 agents by performance
+   - Teams ranked by connect rate
+   - Summary stats: agent count, team count, avg connect rate
+   - Black/purple theme with ArmorHQ shield logo
+   - Mobile-responsive (375px+)
+
+2. Four Reporting API Endpoints:
+   - GET /api/weekly-digest (JSON)
+   - GET /api/weekly-digest.csv (CSV for Google Sheets)
+   - GET /api/agents/[id]/scorecard (Individual agent 14-day)
+   - GET /api/teams/[name]/summary (Team 7-day rollup)
+
+3. Data Layer (src/lib/db.ts)
+   - All queries centralized
+   - No hardcoded numbers
+   - Types for safety
+
+4. Tests (10 passing)
+   - Metric calculations verified
+   - Date math verified
+   - Aggregation logic verified
+   - Sorting verified
+
+5. Documentation
+   - DECISIONS.md: Design & architecture decisions
+   - Code comments where it matters
+
+FILES ADDED/MODIFIED:
+- src/app/page.tsx (dashboard UI)
+- src/lib/db.ts (data layer with query functions)
+- src/app/api/weekly-digest/route.ts
+- src/app/api/weekly-digest.csv/route.ts
+- src/app/api/agents/[id]/scorecard/route.ts
+- src/app/api/teams/[name]/summary/route.ts
+- src/__tests__/metrics.test.ts (10 tests)
+- vitest.config.ts (test configuration)
+- DECISIONS.md (design documentation)
+
+ALL CONSTRAINTS MET:
+✅ Next.js project
+✅ shadcn UI components only
+✅ All queries through src/lib/db.ts
+✅ Mobile-responsive (375px+)
+✅ Logo in header
+✅ No console errors
+✅ 10 passing tests (required: at least 1)
+✅ 4 API endpoints with correct error handling
+✅ Cache-Control: no-store on all endpoints
+✅ Comments where it matters
+
+TO PUSH TO YOUR SUBMISSION REPO:
+1. You have the code locally in /Users/matthewoscar/Desktop/PhoneBurner/dashboard-assessment
+2. Create/set your submission repo at: https://github.com/MatthewOscar/dashboard-assessment
+3. (Already configured in your notes above)
+4. Run: git push origin main (or whatever branch)
+
+The commit hash for this submission: 038104e

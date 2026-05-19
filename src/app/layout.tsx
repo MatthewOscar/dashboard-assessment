@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "ArmorHQ Dashboard",
-  description: "Caller ID reputation and dialer performance, at a glance.",
+  description: "Week-over-week dialer team performance at a glance.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

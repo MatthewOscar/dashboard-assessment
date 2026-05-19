@@ -96,7 +96,22 @@ export function getConnectedCallsLastDays(days: number): number {
 }
 
 /**
- * Get daily call stats for the last N days (oldest first)
+ * Build a list of YYYY-MM-DD strings ending today, length = days.
+ * Today counts as the last entry, so 28 days = today and 27 before.
+ */
+function rollingDates(days: number): string[] {
+  const today = new Date();
+  const dates: string[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today.getTime() - i * 24 * 60 * 60 * 1000);
+    dates.push(d.toISOString().split("T")[0]);
+  }
+  return dates;
+}
+
+/**
+ * Get daily call stats for the last N days (oldest first).
+ * Zero-fills days with no calls so the array always has exactly `days` entries.
  */
 export function getDailyStats(days: number): Array<{
   date: string;
@@ -104,18 +119,27 @@ export function getDailyStats(days: number): Array<{
   total_count: number;
 }> {
   const db = getDb();
-  const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const dates = rollingDates(days);
   const rows = db.prepare(`
-    SELECT 
+    SELECT
       DATE(started_at) as date,
       SUM(CASE WHEN outcome = 'connected' THEN 1 ELSE 0 END) as connected_count,
       COUNT(*) as total_count
     FROM calls
-    WHERE DATE(started_at) >= ?
+    WHERE DATE(started_at) >= ? AND DATE(started_at) <= ?
     GROUP BY DATE(started_at)
-    ORDER BY date ASC
-  `).all(cutoff) as Array<{ date: string; connected_count: number; total_count: number }>;
-  return rows;
+  `).all(dates[0], dates[dates.length - 1]) as Array<{ date: string; connected_count: number; total_count: number }>;
+  const byDate = new Map(rows.map(r => [r.date, r]));
+  return dates.map(date => ({
+    date,
+    connected_count: byDate.get(date)?.connected_count ?? 0,
+    total_count: byDate.get(date)?.total_count ?? 0,
+  }));
+}
+
+export function getWindowRange(days: number): { start: string; end: string } {
+  const dates = rollingDates(days);
+  return { start: dates[0], end: dates[dates.length - 1] };
 }
 
 /**
@@ -146,7 +170,7 @@ export function getTopAgents(): Array<{
 }
 
 /**
- * Get daily stats for a specific agent (last 14 days)
+ * Get daily stats for a specific agent (last 14 days), zero-filled.
  */
 export function getAgentDailyStats(agentId: string): Array<{
   date: string;
@@ -154,18 +178,22 @@ export function getAgentDailyStats(agentId: string): Array<{
   total_count: number;
 }> {
   const db = getDb();
-  const cutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+  const dates = rollingDates(14);
   const rows = db.prepare(`
-    SELECT 
+    SELECT
       DATE(started_at) as date,
       SUM(CASE WHEN outcome = 'connected' THEN 1 ELSE 0 END) as connected_count,
       COUNT(*) as total_count
     FROM calls
-    WHERE agent_id = ? AND DATE(started_at) >= ?
+    WHERE agent_id = ? AND DATE(started_at) >= ? AND DATE(started_at) <= ?
     GROUP BY DATE(started_at)
-    ORDER BY date ASC
-  `).all(agentId, cutoff) as Array<{ date: string; connected_count: number; total_count: number }>;
-  return rows;
+  `).all(agentId, dates[0], dates[dates.length - 1]) as Array<{ date: string; connected_count: number; total_count: number }>;
+  const byDate = new Map(rows.map(r => [r.date, r]));
+  return dates.map(date => ({
+    date,
+    connected_count: byDate.get(date)?.connected_count ?? 0,
+    total_count: byDate.get(date)?.total_count ?? 0,
+  }));
 }
 
 /**

@@ -1,13 +1,13 @@
-import { getAgent, getAgentDailyStats, getAgentTotals } from "@/lib/db";
+import { getAgent, getAgentDailyStats, getAgentTotals, getWindowRange } from "@/lib/db";
 
 export const revalidate = 0;
 
 export async function GET(
   _: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const agentId = params.id;
+    const { id: agentId } = await params;
     const agent = getAgent(agentId);
 
     if (!agent) {
@@ -19,8 +19,7 @@ export async function GET(
 
     const dailyStats = getAgentDailyStats(agentId);
     const totals = getAgentTotals(agentId);
-    const now = new Date();
-    const windowStart = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    const window = getWindowRange(14);
 
     return Response.json(
       {
@@ -33,9 +32,9 @@ export async function GET(
         last_14_days: dailyStats,
         totals,
         meta: {
-          generated_at: now.toISOString(),
-          window_start: windowStart.toISOString().split("T")[0],
-          window_end: now.toISOString().split("T")[0],
+          generated_at: new Date().toISOString(),
+          window_start: window.start,
+          window_end: window.end,
         },
       },
       {

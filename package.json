@@ -7,13 +7,13 @@
     "node": ">=22.5.0"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "NODE_OPTIONS=--experimental-sqlite next dev",
+    "build": "NODE_OPTIONS=--experimental-sqlite next build",
+    "start": "NODE_OPTIONS=--experimental-sqlite next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "seed": "tsx scripts/seed.ts"
+    "seed": "NODE_OPTIONS=--experimental-sqlite tsx scripts/seed.ts"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.0",

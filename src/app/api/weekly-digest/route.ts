@@ -1,4 +1,4 @@
-import { getDailyStats, getTopAgents, getTeamsByDate } from "@/lib/db";
+import { getDailyStats, getTopAgents, getTeamsByDate, getWindowRange } from "@/lib/db";
 
 export const revalidate = 0;
 
@@ -22,8 +22,7 @@ export async function GET() {
       };
     });
 
-    const now = new Date();
-    const windowStart = new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000);
+    const window = getWindowRange(28);
 
     return Response.json(
       {
@@ -34,9 +33,9 @@ export async function GET() {
           connected_count: a.connected_count,
         })),
         meta: {
-          generated_at: now.toISOString(),
-          window_start: windowStart.toISOString().split("T")[0],
-          window_end: now.toISOString().split("T")[0],
+          generated_at: new Date().toISOString(),
+          window_start: window.start,
+          window_end: window.end,
         },
       },
       {

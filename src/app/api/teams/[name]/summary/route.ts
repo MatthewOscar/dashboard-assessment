@@ -1,13 +1,14 @@
-import { getAgents, getTeamStats, getTeamAgents } from "@/lib/db";
+import { getAgents, getTeamStats, getTeamAgents, getWindowRange } from "@/lib/db";
 
 export const revalidate = 0;
 
 export async function GET(
   _: Request,
-  { params }: { params: { name: string } }
+  { params }: { params: Promise<{ name: string }> }
 ) {
   try {
-    const teamName = decodeURIComponent(params.name);
+    const { name } = await params;
+    const teamName = decodeURIComponent(name);
     
     // Check if team exists
     const allAgents = getAgents(teamName);
@@ -20,8 +21,7 @@ export async function GET(
 
     const stats = getTeamStats(teamName);
     const agents = getTeamAgents(teamName);
-    const now = new Date();
-    const windowStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const window = getWindowRange(7);
 
     return Response.json(
       {
@@ -32,9 +32,9 @@ export async function GET(
         last_7_days: stats,
         agents,
         meta: {
-          generated_at: now.toISOString(),
-          window_start: windowStart.toISOString().split("T")[0],
-          window_end: now.toISOString().split("T")[0],
+          generated_at: new Date().toISOString(),
+          window_start: window.start,
+          window_end: window.end,
         },
       },
       {
